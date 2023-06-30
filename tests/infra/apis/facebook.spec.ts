@@ -58,4 +58,14 @@ describe('Facebook Api', () => {
       }
     })
   })
+
+  it('should get facebook user', async () => {
+    const fbUser = await sut.loadUser({ token: 'any_client_token' })
+
+    expect(fbUser).toEqual({
+      facebookId: 'any_fb_id',
+      name: 'any_fb_name',
+      email: 'any_fb_email'
+    })
+  })
 })
