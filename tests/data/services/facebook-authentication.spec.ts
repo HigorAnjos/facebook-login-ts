@@ -122,3 +122,4 @@ describe('FacebookAuthenticationService', () => {
     void expect(promisse).rejects.toThrow(new Error('token_error'))
   })
 })
+// 004-
