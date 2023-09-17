@@ -5,26 +5,25 @@ import { getRepository, type Repository, getConnection } from 'typeorm'
 import { makeFakeDb } from '../mocks/index'
 
 describe('PgUserAAccountRepository', () => {
+  let sut: PgUserAccountRepository
+  let pgUserRepo: Repository<PgUser>
+  let backup: IBackup
+
+  beforeAll(async () => {
+    const db = await makeFakeDb()
+    backup = db.backup() // gera um ponto de restauracao (Banco limpo)
+    pgUserRepo = getRepository(PgUser)
+  })
+
+  beforeEach(() => {
+    sut = new PgUserAccountRepository()
+  })
+
+  afterAll(async () => {
+    backup.restore()
+    await getConnection().close()
+  })
   describe('load', () => {
-    let sut: PgUserAccountRepository
-    let pgUserRepo: Repository<PgUser>
-    let backup: IBackup
-
-    beforeAll(async () => {
-      const db = await makeFakeDb()
-      backup = db.backup() // gera um ponto de restauracao (Banco limpo)
-      pgUserRepo = getRepository(PgUser)
-    })
-
-    beforeEach(() => {
-      sut = new PgUserAccountRepository()
-    })
-
-    afterAll(async () => {
-      backup.restore()
-      await getConnection().close()
-    })
-
     it('should return an account if email exist', async () => {
       await pgUserRepo.save({ email: 'existing_email' })
       const account = await sut.load({ email: 'existing_email' })
