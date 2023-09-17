@@ -1,6 +1,6 @@
 import { type LoadUserAccountRepository } from '@/data/Contracts/repos'
-import { newDb } from 'pg-mem'
-import { Entity, PrimaryGeneratedColumn, Column, getRepository } from 'typeorm'
+import { type IBackup, newDb } from 'pg-mem'
+import { Entity, PrimaryGeneratedColumn, Column, getRepository, type Repository, getConnection } from 'typeorm'
 
 class PgUserAccountRepository implements LoadUserAccountRepository {
   async load (params: LoadUserAccountRepository.Params): Promise<LoadUserAccountRepository.Result> {
@@ -32,39 +32,40 @@ class PgUser {
 
 describe('PgUserAAccountRepository', () => {
   describe('load', () => {
-    it('should return an account if email exist', async () => {
+    let sut: PgUserAccountRepository
+    let pgUserRepo: Repository<PgUser>
+    let backup: IBackup
+
+    beforeAll(async () => {
       const db = newDb()
       const connection = await db.adapters.createTypeormConnection({
         type: 'postgres',
         entities: [PgUser]
       })
       await connection.synchronize()
-      const pgUserRepo = getRepository(PgUser)
+      backup = db.backup() // gera um ponto de restauracao (Banco limpo)
+      pgUserRepo = getRepository(PgUser)
+    })
+
+    beforeEach(() => {
+      sut = new PgUserAccountRepository()
+    })
+
+    afterAll(async () => {
+      backup.restore()
+      await getConnection().close()
+    })
+
+    it('should return an account if email exist', async () => {
       await pgUserRepo.save({ email: 'existing_email' })
-
-      const sut = new PgUserAccountRepository()
-
       const account = await sut.load({ email: 'existing_email' })
 
       expect(account).toEqual({ id: '1' })
-      await connection.close()
     })
     it('should return an account if email does not exist', async () => {
-      const db = newDb()
-      const connection = await db.adapters.createTypeormConnection({
-        type: 'postgres',
-        entities: [PgUser]
-      })
-      await connection.synchronize()
-
-      const sut = new PgUserAccountRepository()
-
       const account = await sut.load({ email: 'new_email' })
 
       expect(account).toBeUndefined()
-      await connection.close()
     })
   })
 })
-
-// 005-28, prox: 29
