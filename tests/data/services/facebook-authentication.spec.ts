@@ -118,7 +118,6 @@ describe('FacebookAuthenticationService', () => {
     crypto.generateToken.mockRejectedValueOnce(new Error('token_error'))
 
     const promisse = sut.perform({ token })
-
     void expect(promisse).rejects.toThrow(new Error('token_error'))
   })
 })
