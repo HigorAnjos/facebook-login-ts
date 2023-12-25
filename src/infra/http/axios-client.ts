@@ -3,8 +3,8 @@ import { type HttpGetClient } from './client'
 import axios from 'axios'
 
 export class AxiosHttpClient {
-  async get<T = any> (args: HttpGetClient.Params): Promise<T> {
-    const result = await axios.get(args.url, { params: args.params })
+  async get ({ url, params }: HttpGetClient.Params): Promise<any> {
+    const result = await axios.get(url, { params })
     return result.data
   }
 }
